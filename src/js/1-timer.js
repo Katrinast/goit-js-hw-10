@@ -8,8 +8,19 @@ import iziToast from "izitoast";
 // Додатковий імпорт стилів
 import "izitoast/dist/css/iziToast.min.css";
 
+const refsElemets = {
+  dateTimePicker: document.querySelector('#datetime-picker'),
+  butnStart: document.querySelector('[data-start]'),
+  daySpan: document.querySelector('[data-days]'),
+ hoursSpan: document.querySelector('[data-hours]'),
+  minutesSpan: document.querySelector('[data-minutes]'),
+  secondsSpan: document.querySelector('[data-seconds]'),
+};
 
-let userSelectedDate;
+const { dateTimePicker, butnStart, daySpan, minutesSpan, hoursSpan, secondsSpan } = refsElemets;
+
+let intervalId = null;
+let userSelectedDate = null;
 const options = {
   enableTime: true,
   time_24hr: true,
@@ -17,11 +28,41 @@ const options = {
   minuteIncrement: 1,
   onClose(selectedDates) {
     userSelectedDate = selectedDates[0]
+    if (userSelectedDate <= new Date()) {
+  iziToast.show({
+    // title: 'Hey',
+    message: 'Please choose a date in the future'
+  });
+      butnStart.disabled = true;
+    } else {
+      butnStart.disabled = false;
+}
   },
 };
 
 flatpickr('#datetime-picker', options);
 
+butnStart.addEventListener('click', onStartBtnClick);
+
+function onStartBtnClick(event) {
+  if (intervalId) {
+    clearInterval(intervalId);
+  }
+  butnStart.disabled = true;
+  dateTimePicker.disabled = true;
+  intervalId = setInterval(() => {
+    const now = Date.now();
+    const timeDifference = userSelectedDate - now;
+    if (timeDifference <= 0) {
+      clearInterval(intervalId);
+      updateTimerDisplay(0, 0, 0, 0);
+      dateTimePicker.disabled = false;
+      return;
+    }
+    const timeComplete = convertMs(timeDifference);
+    updateTimerDisplay(timeComplete.days, timeComplete.hours, timeComplete.minutes, timeComplete.seconds);
+  }, 1000);
+}
 
 function  convertMs ( ms ) {
    // Number of milliseconds per unit of time 
@@ -42,9 +83,16 @@ function  convertMs ( ms ) {
   return { days, hours, minutes, seconds };
 }
 
-console . log (convertMs( 2000 )); // {days: 0, hours: 0, minutes: 0, seconds: 2} 
-console . log (convertMs( 140000 )); // {days: 0, hours: 0, minutes: 2, seconds: 20} 
-console . log (convertMs( 24140000 )); // {days: 0, hours: 6 minutes: 42, seconds: 20}
+function updateTimerDisplay(days, hours, minutes, seconds) {
+  daySpan.textContent = addLeadingZero(days);
+  hoursSpan.textContent = addLeadingZero(hours);
+  minutesSpan.textContent = addLeadingZero(minutes);
+  secondsSpan.textContent = addLeadingZero(seconds);
+}
+
+function addLeadingZero(value) {
+  return String(value).padStart(2, '0');
+}
 
 
 
