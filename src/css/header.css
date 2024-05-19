@@ -13,6 +13,16 @@
   font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1.5;
+  text-align: center;
+}
+
+.nav-item {
+  width: 100px;
+  border: 5px solid #065544;
+}
+
+.nav-item:hover {
+  border-color: aqua;
 }
 
 .nav-link:hover,
